@@ -7,13 +7,13 @@ This project requires the rust toolchain, including cargo.
 
 ## Getting Started
 
-Launching the application is as simple as:
+Launching the application is as simple as passing the token:
 
 ```shell
-$ cargo run foo.bar
+$ cargo run eyJ...lA
 ```
 
-Where "foo.bar" is the API hostname for FSQL.
+Where "eyJ...lA" is the API bearer token
 
 ## Release Builds
 
