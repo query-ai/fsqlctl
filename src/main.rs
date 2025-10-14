@@ -100,7 +100,7 @@ fn main() {
                     }
                 }
                 Err(e) => {
-                    println!("Error reading input: {}", e);
+                    println!("Error reading input: {e}");
                     continue;
                 }
             }
@@ -116,7 +116,7 @@ fn main() {
         let lower_input = trimmed_input.to_lowercase();
 
         // Process the complete input (use cleaned input for API calls)
-        if lower_input.starts_with("query ") || lower_input.starts_with("explain ") {
+        if lower_input.starts_with("explain ") {
             let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(_response) => {
@@ -128,8 +128,7 @@ fn main() {
             }
         } else if lower_input == "help" || lower_input == "h" {
             println!("📚 FSQL REPL Help:");
-            println!("  QUERY <fsql>     - Execute an FSQL query");
-            println!("  EXPLAIN <sql>    - Get query execution details");
+            println!("  EXPLAIN <fsql>   - Get query execution details");
             println!("  help, h          - Show this help message");
             println!("  clear            - Clear the screen");
             println!("  exit             - Exit the REPL");
@@ -143,6 +142,10 @@ fn main() {
             clearscreen::clear().expect("Failed to clear screen");
             println!("Federated Search Query Language (FSQL) Interpreter");
             println!("API: {}", api_url);
+        } else if lower_input == "exit" {
+            println!("\n");
+            print_goodbye();
+            return;
         } else {
             println!("(╯°□°)╯︵ ┻━┻ Invalid Command");
             println!("💡 Type 'help' for available commands");
