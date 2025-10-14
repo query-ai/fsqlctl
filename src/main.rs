@@ -107,40 +107,23 @@ fn main() {
         }
 
         let trimmed_input = input.trim();
-        let lower_input = trimmed_input.to_lowercase();
 
         // Skip empty input
         if trimmed_input.is_empty() {
             continue;
         }
 
-        // Clean up terminators for processing (but keep the original query structure)
-        let cleaned_input = if trimmed_input.ends_with(';') {
-            trimmed_input.trim_end_matches(';').trim()
-        } else {
-            trimmed_input
-        };
+        let lower_input = trimmed_input.to_lowercase();
 
         // Process the complete input (use cleaned input for API calls)
-        if lower_input.starts_with("query") {
-            let result = api::dispatch_query(cleaned_input, &api_url, &args.token, args.verbose);
+        if lower_input.starts_with("query ") || lower_input.starts_with("explain ") {
+            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(_response) => {
                     // Response is already printed in the function
                 }
                 Err(e) => {
                     println!("❌ Error dispatching command: {e}");
-                }
-            }
-        } else if lower_input.starts_with("explain") {
-            let result = api::dispatch_query(cleaned_input, &api_url, &args.token, args.verbose);
-            match result {
-                Ok(_response) => {
-                    // Response is printed in the dispatch_query function
-                }
-                Err(e) => {
-                    println!("❌ Error dispatching command:");
-                    println!("{e}")
                 }
             }
         } else if lower_input == "help" || lower_input == "h" {
