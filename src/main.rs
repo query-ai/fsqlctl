@@ -15,7 +15,7 @@ struct Args {
     #[arg(long, default_value = "api.dev.query.ai")]
     host: String, // Hostname for FSQL API
 
-    #[arg(long, default_value = "search/v2/graphql")]
+    #[arg(long, default_value = "search/translation/fsql")]
     path: String, // Path to endpoint
 
     /// Port

@@ -1,5 +1,7 @@
 use reqwest::blocking::Client;
+use reqwest::header;
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PostData {
@@ -34,21 +36,38 @@ fn add_headers(
     token: &str,
     verbose: bool,
 ) -> reqwest::blocking::RequestBuilder {
-    let _req = request_builder.header("X-Queryai-Fuql", "v2");
-
     let clean_token = strip_bearer_prefix(token);
+    let mut request_headers = header::HeaderMap::new();
+
+    request_headers.insert(header::USER_AGENT, header::HeaderValue::from_static("curl"));
+    request_headers.insert(
+        header::HeaderName::from_static("x-queryai-fuql"),
+        header::HeaderValue::from_static("v2"),
+    );
+    request_headers.insert(
+        header::CONTENT_TYPE,
+        header::HeaderValue::from_static("application/json"),
+    );
 
     if is_jwt_token(clean_token) {
         if verbose {
             println!("🔍 Detected JWT token - using Authorization header");
         }
-        _req.bearer_auth(clean_token)
+        request_headers.insert(
+            header::AUTHORIZATION,
+            header::HeaderValue::from_str(clean_token).expect("Header value is invalid"),
+        );
     } else {
         if verbose {
             println!("🔍 Detected API key - using x-token-authorization header");
         }
-        _req.header("x-token-authorization", clean_token)
+        request_headers.insert(
+            header::HeaderName::from_static("x-token-authorization"),
+            header::HeaderValue::from_str(clean_token).expect("Header value is invalid"),
+        );
     }
+
+    request_builder.headers(request_headers)
 }
 
 pub fn dispatch_query(
@@ -93,15 +112,7 @@ pub fn dispatch_query(
                 // Log response headers
                 println!("📋 Response Headers:");
                 for (key, value) in response.headers() {
-                    if key.as_str().to_lowercase() == "www-authenticate" {
-                        println!(
-                            "  🔐 {}: {} <- Authentication challenge from server",
-                            key,
-                            value.to_str().unwrap_or("<non-utf8>")
-                        );
-                    } else {
-                        println!("  {}: {}", key, value.to_str().unwrap_or("<non-utf8>"));
-                    }
+                    println!("   {}: {}", key, value.to_str().unwrap_or("<non-utf8>"));
                 }
 
                 // Special handling for 401/403 responses
@@ -192,22 +203,13 @@ pub fn dispatch_query(
     if verbose {
         println!("📖 Reading response body...");
     }
-    let text = match response.text() {
-        Ok(text) => {
-            if verbose {
-                println!("✅ Successfully read {} bytes of response", text.len());
-                if text.len() < 1000 {
-                    println!("📄 Response body: {}", text);
-                } else {
-                    println!("📄 Response body (truncated): {}...", &text[..1000]);
-                    println!(
-                        "💡 Full response is {} bytes (truncated for display)",
-                        text.len()
-                    );
-                }
-                println!("🎉 Query dispatched successfully!");
-            }
-            text
+
+    let response_text = response.text().unwrap();
+
+    let _data = match serde_json::from_str::<serde_json::Value>(&response_text) {
+        Ok(_data) => {
+            println!("{}", serde_json::to_string_pretty(&_data).unwrap());
+            _data
         }
         Err(e) => {
             if verbose {
@@ -216,5 +218,5 @@ pub fn dispatch_query(
             return Err(Box::new(e));
         }
     };
-    Ok(text)
+    Ok(response_text)
 }
