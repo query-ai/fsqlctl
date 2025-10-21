@@ -116,7 +116,7 @@ fn main() {
         let lower_input = trimmed_input.to_lowercase();
 
         // Process the complete input (use cleaned input for API calls)
-        if lower_input.starts_with("explain ") {
+        if lower_input.starts_with("explain ") || lower_input.starts_with("query ") {
             let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(_response) => {
