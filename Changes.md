@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4] (2025-10-21)
+
+- Fixed "Bearer" prefix for JWT
+
 ## [0.3] (2025-10-21)
 
 - Fix regular queries (previously only dispatched EXPLAIN queries)
