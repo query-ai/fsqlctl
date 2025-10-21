@@ -53,9 +53,10 @@ fn add_headers(
         if verbose {
             println!("🔍 Detected JWT token - using Authorization header");
         }
+        let bearer_token = format!("Bearer {}", clean_token);
         request_headers.insert(
             header::AUTHORIZATION,
-            header::HeaderValue::from_str(clean_token).expect("Header value is invalid"),
+            header::HeaderValue::from_str(&bearer_token).expect("Header value is invalid"),
         );
     } else {
         if verbose {
