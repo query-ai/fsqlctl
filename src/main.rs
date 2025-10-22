@@ -82,15 +82,18 @@ fn main() {
                         consecutive_empty_lines = 0;
                     }
 
-                    // There are two means of exiting the loop here, either someone
-                    // issues a single line command (i.e. help or exit) or they
-                    // include two newline characters
-                    if consecutive_empty_lines >= 2 {
+                    // There are three means of exiting the loop here:
+                    // 1. Someone issues a single line command (i.e. help or exit)
+                    // 2. They include an empty newline
+                    // 3. The line ends with a semicolon
+                    if consecutive_empty_lines >= 1 {
                         break;
                     } else if line_count == 1
                         && !trimmed_line.is_empty()
                         && !trimmed_line.contains(' ')
                     {
+                        break;
+                    } else if trimmed_line.ends_with(';') {
                         break;
                     }
 
@@ -134,9 +137,10 @@ fn main() {
             println!("  exit             - Exit the REPL");
             println!();
             println!("💡 Tips:");
-            println!("  • Hit enter twice to dispatch your command to the FSQL API");
             println!("  • Multiline queries can be pasted");
             println!("  • Use \\reset to clear a query without submitting it");
+            println!("  • Hit enter twice to send your command to the FSQL API");
+            println!("  • End a command with ';' to end multiline input and send your command");
             println!("  • Press Ctrl+D (Unix) or Ctrl+Z (Windows) to exit");
         } else if lower_input == "clear" {
             clearscreen::clear().expect("Failed to clear screen");
