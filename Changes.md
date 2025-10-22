@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5] (2024-10-22)
+
+- Reduce the number of keypresses required to end a multiline command
+- Add support for terminating commands with the ; character
+
+## [0.4] (2024-10-21)
+
+- Fix github build action (was failing for aarm64)
+
 ## [0.3] (2025-10-21)
 
 - Fix regular queries (previously only dispatched EXPLAIN queries)
