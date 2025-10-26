@@ -2,10 +2,19 @@ use reqwest::blocking::Client;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use std::io;
+use std::io::Write;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PostData {
     q: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ExplainResponse {
+    command: String,
+    input: String,
+    expanded_query: String,
 }
 
 fn strip_bearer_prefix(token: &str) -> &str {
@@ -206,10 +215,15 @@ pub fn dispatch_query(
     }
 
     let response_text = response.text().unwrap();
+    let parsed_response: ExplainResponse = serde_json::from_str(&response_text)?;
 
     let _data = match serde_json::from_str::<serde_json::Value>(&response_text) {
         Ok(_data) => {
-            println!("{}", serde_json::to_string_pretty(&_data).unwrap());
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&parsed_response).unwrap()
+            );
+            io::stdout().flush().unwrap();
             _data
         }
         Err(e) => {
