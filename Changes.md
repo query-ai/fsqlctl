@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6] (2024-10-30)
+
+- Added command history support via readline
+
 ## [0.5] (2024-10-22)
 
 - Reduce the number of keypresses required to end a multiline command
