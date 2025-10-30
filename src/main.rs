@@ -2,8 +2,9 @@ use clap::Parser;
 use clearscreen;
 use rand::prelude::IndexedRandom;
 use rand::rng;
-use std::io;
-use std::io::Write;
+use rustyline::DefaultEditor;
+use rustyline::error::ReadlineError;
+use std::path::PathBuf;
 
 mod api;
 
@@ -33,6 +34,23 @@ fn main() {
     println!("Federated Search Query Language (FSQL) Interpreter");
     println!("API: {api_url}");
 
+    // Initialize rustyline editor
+    let mut rl = match DefaultEditor::new() {
+        Ok(editor) => editor,
+        Err(e) => {
+            eprintln!("Failed to initialize readline editor: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    // Set up history file path
+    let history_path = get_history_path();
+
+    // Load existing history
+    if let Err(_) = rl.load_history(&history_path) {
+        // History file doesn't exist yet, which is fine for first run
+    }
+
     loop {
         // Read multiline input
         let mut input = String::new();
@@ -40,23 +58,14 @@ fn main() {
         let mut consecutive_empty_lines = 0;
 
         loop {
-            if line_count == 0 {
-                print!("fsql> ");
+            let prompt = if line_count == 0 {
+                "fsql> ".to_string()
             } else {
-                print!("{:3}> ", line_count + 1);
-            }
-            io::stdout().flush().unwrap();
+                format!("{:3}> ", line_count + 1)
+            };
 
-            let mut line = String::new();
-            match io::stdin().read_line(&mut line) {
-                Ok(0) => {
-                    // Detect EOF (Ctrl+D on Unix, Ctrl+Z on Windows) and add a newline
-                    // before printing the goodbye message
-                    println!("\n");
-                    print_goodbye();
-                    return;
-                }
-                Ok(_) => {
+            match rl.readline(&prompt) {
+                Ok(line) => {
                     // Check for special commands on any line
                     let trimmed_line = line.trim();
                     let lower_line = trimmed_line.to_lowercase();
@@ -73,6 +82,7 @@ fn main() {
                     }
 
                     input.push_str(&line);
+                    input.push('\n');
                     line_count += 1;
 
                     // Track consecutive empty lines for double-newline termination
@@ -102,8 +112,21 @@ fn main() {
                         break;
                     }
                 }
-                Err(e) => {
-                    println!("Error reading input: {e}");
+                Err(ReadlineError::Interrupted) => {
+                    // Handle Ctrl+C
+                    println!("^C");
+                    input.clear();
+                    line_count = 0;
+                    consecutive_empty_lines = 0;
+                    continue;
+                }
+                Err(ReadlineError::Eof) => {
+                    // Handle Ctrl+D - exit the program
+                    println!();
+                    save_history_and_exit(&mut rl, &history_path);
+                }
+                Err(err) => {
+                    eprintln!("Error reading input: {err}");
                     continue;
                 }
             }
@@ -116,6 +139,11 @@ fn main() {
             continue;
         }
 
+        // Add non-empty commands to history
+        if let Err(_) = rl.add_history_entry(trimmed_input) {
+            // History add failed, but we continue
+        }
+
         let lower_input = trimmed_input.to_lowercase();
 
         // Process the complete input (use cleaned input for API calls)
@@ -126,7 +154,7 @@ fn main() {
                     // Response is already printed in the function
                 }
                 Err(e) => {
-                    println!("❌ Error dispatching command: {e}");
+                    eprintln!("❌ Error dispatching command: {e}");
                 }
             }
         } else if lower_input == "help" || lower_input == "h" {
@@ -142,19 +170,39 @@ fn main() {
             println!("  • Hit enter twice to send your command to the FSQL API");
             println!("  • End a command with ';' to end multiline input and send your command");
             println!("  • Press Ctrl+D (Unix) or Ctrl+Z (Windows) to exit");
+            println!("  • Use Up/Down arrows to navigate command history");
+            println!("  • Use Ctrl+R for reverse history search");
         } else if lower_input == "clear" {
             clearscreen::clear().expect("Failed to clear screen");
             println!("Federated Search Query Language (FSQL) Interpreter");
             println!("API: {}", api_url);
         } else if lower_input == "exit" {
-            println!("\n");
-            print_goodbye();
-            return;
+            println!();
+            save_history_and_exit(&mut rl, &history_path);
         } else {
             println!("(╯°□°)╯︵ ┻━┻ Invalid Command");
             println!("💡 Type 'help' for available commands");
         }
     }
+}
+
+fn get_history_path() -> PathBuf {
+    dirs::home_dir()
+        .map(|mut path| {
+            path.push(".fsql_history");
+            path
+        })
+        .unwrap_or_else(|| PathBuf::from(".fsql_history"))
+}
+
+fn save_history_and_exit(rl: &mut DefaultEditor, history_path: &PathBuf) -> ! {
+    // Save history before exit
+    if let Err(e) = rl.save_history(history_path) {
+        eprintln!("Warning: Failed to save history: {}", e);
+    }
+
+    print_goodbye();
+    std::process::exit(0);
 }
 
 fn print_goodbye() {
@@ -171,7 +219,7 @@ fn print_goodbye() {
     ];
     let mut rand_gen = rng();
     if let Some(goodbye_msg) = exit_messages.choose(&mut rand_gen) {
-        println!("{}", goodbye_msg);
+        println!("{goodbye_msg}");
     } else {
         println!("Exiting REPL.");
     }
