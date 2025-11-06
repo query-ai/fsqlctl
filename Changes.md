@@ -2,9 +2,9 @@
 
 ## [0.12] (2024-11-06)
 
-- Renamed dispatch_query to dispatch_command
-- Added docstrings for documentation building later
-- Added ``--file`` / ``-f`` to load a file from disk
+- Added ``--command`` / ``-c`` to execute FSQL commands directly from CLI arguments
+- Added ``--file`` / ``-f`` to read an FSQL command from a file
+- Refactored command processing into shared `process_command` function
 
 ## [0.11] (2024-11-06)
 

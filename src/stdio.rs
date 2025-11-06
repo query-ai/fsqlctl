@@ -133,12 +133,7 @@ fn handle_query_command(input: &str, api_url: &str, token: &str, verbose: bool) 
     }
 }
 
-/// Route a query to the correct handler.
-///
-/// Valid commands begin with QUERY EXPLAIN or VALIDATE. Any other prefix
-/// will result in an error. The prefix is not case sensitive. Leading
-/// whitespace should be trimmed before handing off to this method.
-fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
     if input.is_empty() {
         eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
         std::process::exit(1);
