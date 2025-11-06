@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8] (2024-11-06)
+
+- Added dependency on ``colored``library
+- Added some colored terminal output to the REPL
+- Split printing the welcome text, tips, and help into separate functions
+
 ## [0.7] (2024-11-06)
 
 - Added new cli option ``-i`` / ``--stdin`` to read commands from a pipe

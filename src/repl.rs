@@ -1,5 +1,6 @@
 use crate::{Args, api};
 use clearscreen;
+use colored::Colorize;
 use rand::prelude::IndexedRandom;
 use rand::rng;
 use rustyline::DefaultEditor;
@@ -9,9 +10,8 @@ use std::path::PathBuf;
 
 pub fn handle_repl(args: Args) {
     let api_url = format!("https://{}/{}", args.host, args.path);
-
-    println!("Federated Search Query Language (FSQL) Interpreter");
-    println!("API: {api_url}");
+    print_welcome(&api_url);
+    print_help();
 
     // Initialize rustyline editor
     let mut rl_editor = match DefaultEditor::new() {
@@ -27,7 +27,8 @@ pub fn handle_repl(args: Args) {
 
     // Load existing history
     if let Err(_) = rl_editor.load_history(&history_path) {
-        // History file doesn't exist yet, which is fine for first run
+        // History file doesn't exist yet, which is fine for first run; it
+        // will be created automagically
     }
 
     loop {
@@ -92,7 +93,7 @@ pub fn handle_repl(args: Args) {
                     }
                 }
                 Err(ReadlineError::Interrupted) => {
-                    // Handle Ctrl+C
+                    // Handle Ctrl+C  - added the println here so it is obvious what happened
                     println!("^C");
                     input.clear();
                     line_count = 0;
@@ -151,29 +152,17 @@ pub fn handle_repl(args: Args) {
                 }
             }
         } else if lower_input == "help" || lower_input == "h" {
-            println!("📚 FSQL REPL Help:");
-            println!("  EXPLAIN <fsql>   - Get query execution details");
-            println!("  help, h          - Show this help message");
-            println!("  clear            - Clear the screen");
-            println!("  exit             - Exit the REPL");
+            print_help();
             println!();
-            println!("💡 Tips:");
-            println!("  • Multiline queries can be pasted");
-            println!("  • Use \\reset to clear a query without submitting it");
-            println!("  • Hit enter twice to send your command to the FSQL API");
-            println!("  • End a command with ';' to end multiline input and send your command");
-            println!("  • Press Ctrl+D (Unix) or Ctrl+Z (Windows) to exit");
-            println!("  • Use Up/Down arrows to navigate command history");
-            println!("  • Use Ctrl+R for reverse history search");
+            print_tips();
         } else if lower_input == "clear" {
             clearscreen::clear().expect("Failed to clear screen");
-            println!("Federated Search Query Language (FSQL) Interpreter");
-            println!("API: {}", api_url);
+            print_welcome(&api_url);
         } else if lower_input == "exit" {
             println!();
             save_history_and_exit(&mut rl_editor, &history_path);
         } else {
-            println!("(╯°□°)╯︵ ┻━┻ Invalid Command");
+            println!("(╯°□°)╯︵ ┻━┻ {}", "Invalid Command".red());
             println!("💡 Type 'help' for available commands");
         }
     }
@@ -198,6 +187,39 @@ fn save_history_and_exit(rl_editor: &mut DefaultEditor, history_path: &PathBuf) 
     std::process::exit(0);
 }
 
+fn print_help() {
+    println!("📚 {}", "FSQL REPL Help:".cyan());
+    println!("   EXPLAIN <fsql>   - Get query execution details");
+    println!("   help, h          - Show this help message");
+    println!("   clear            - Clear the screen");
+    println!("   exit             - Exit the REPL");
+}
+
+fn print_tips() {
+    println!("💡 {}", "Tips:".cyan());
+    println!("  • Multiline queries can be pasted");
+    println!("  • Use \\reset to clear a query without submitting it");
+    println!("  • Hit enter twice to send your command to the FSQL API");
+    println!("  • End a command with ';' to end multiline input and send your command");
+    println!("  • Press Ctrl+D (Unix) or Ctrl+Z (Windows) to exit");
+    println!("  • Use Up/Down arrows to navigate command history");
+    println!("  • Use Ctrl+R for reverse history search");
+}
+
+fn print_welcome(api_url: &str) {
+    let div = "================================================================================"
+        .bright_blue();
+    println!("{}", div);
+    println!(
+        "{} {} {}",
+        "Federated Search Query Language".cyan(),
+        "(FSQL)".bright_cyan(),
+        "Interpreter".cyan(),
+    );
+    println!("🔗 {} {}", "API:".cyan(), api_url.green());
+    println!("{}", div);
+}
+
 fn print_goodbye() {
     let exit_messages = vec![
         "FUQL off!",
@@ -212,7 +234,7 @@ fn print_goodbye() {
     ];
     let mut rand_gen = rng();
     if let Some(goodbye_msg) = exit_messages.choose(&mut rand_gen) {
-        println!("{goodbye_msg}");
+        println!("{}", goodbye_msg.yellow());
     } else {
         println!("Exiting REPL.");
     }
