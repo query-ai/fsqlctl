@@ -1,6 +1,6 @@
-use atty::Stream;
 use clap::Parser;
 use colored::Colorize;
+use std::io::IsTerminal;
 
 mod api;
 mod repl;
@@ -54,17 +54,17 @@ fn main() {
 
     // Check for explicit input methods, then piped input, then REPL
     if let Some(command) = args.command.clone() {
-        if !atty::is(Stream::Stdin) {
+        if !std::io::stdin().is_terminal() {
             eprintln!(
                 "{}",
-                "❌ Cannot pipe to stdin and pass a command directly at the same time".red(),
+                "❌ Cannot pipe to stdin and pass a command at the same time".red(),
             );
             std::process::exit(1);
         }
         let api_url = format!("https://{}/{}", args.host, args.path);
         stdio::process_command(&command, &api_url, &args.token, args.verbose);
     } else if let Some(file_path) = args.file.clone() {
-        if !atty::is(Stream::Stdin) {
+        if !std::io::stdin().is_terminal() {
             eprintln!(
                 "{}",
                 "❌ Cannot pipe to stdin and pass a file at the same time".red(),
@@ -72,7 +72,7 @@ fn main() {
             std::process::exit(1);
         }
         stdio::handle_file(args, &file_path);
-    } else if !atty::is(Stream::Stdin) {
+    } else if !std::io::stdin().is_terminal() {
         stdio::handle_stdin(args);
     } else {
         repl::handle_repl(args);

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.13] (2024-11-06)
+- Replaced `atty` dependency with `std::io::IsTerminal`
+- Setup documentation page
+
 ## [0.12] (2024-11-06)
 
 - Added ``--command`` / ``-c`` to execute FSQL commands directly from CLI arguments
