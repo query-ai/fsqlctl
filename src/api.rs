@@ -22,7 +22,7 @@ fn is_jwt_token(token: &str) -> bool {
         return false;
     }
 
-    // Does this look like it's probably base64?
+    // Does this look like it's probably base64 (crude check)?
     parts.iter().all(|part| {
         !part.is_empty()
             && part
