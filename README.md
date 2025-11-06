@@ -21,7 +21,7 @@ $ fsqlctl eyJ...lA
 
 ## Input Methods
 
-The tool supports multiple ways to provide FSQL commands, with automatic precedence handling:
+The tool supports multiple ways to provide FSQL commands:
 
 ### Interactive REPL (default)
 When no other input is provided, the tool starts an interactive REPL:
@@ -30,30 +30,28 @@ When no other input is provided, the tool starts an interactive REPL:
 $ fsqlctl eyJ...lA
 ```
 
-### Command Line Input
-Execute commands directly from the command line using `-c` or `--command`:
+### Command Line Argument
+Execute command directly from the command line with `-c` or `--command`:
 
 ```shell
 $ fsqlctl eyJ...lA -c "QUERY module_activity.** WITH module_activity.activity_id = LOAD"
 ```
 
 ### File Input
-Read commands from a file using `-f` or `--file`:
+Read command from a file with `-f` or `--file`:
 
 ```shell
 $ fsqlctl eyJ...lA -f query.txt
 ```
 
 ### Piped Input
-Pipe queries to the command (automatically detected):
+Pipe queries to the command:
 
 ```shell
 echo "QUERY module_activity.** WITH module_activity.activity_id = LOAD AND module_activity.actor.process.file.name = 'regsvr32.exe' AFTER 1h" | fsqlctl eyJ...lA | jq
 ```
 
-**Note:** The `-c` and `-f` options are mutually exclusive - you cannot specify both at the same time.
-
-**Input Precedence:** Command line (`-c`) or File (`-f`) > Piped input > REPL
+**Note:** The `-c` and `-f` options are mutually exclusive - you cannot specify both at the same time, nor can you use either option when piping input.
 
 ## Release Builds
 
