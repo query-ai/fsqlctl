@@ -1,4 +1,5 @@
 use crate::{Args, api};
+use serde_json;
 use std::io::{self, Read};
 
 pub fn handle_stdin(args: Args) {
@@ -33,8 +34,23 @@ pub fn handle_stdin(args: Args) {
     // Dispatch the query using the same code as the REPL
     let result = api::dispatch_query(input, &api_url, &args.token, args.verbose);
     match result {
-        Ok(_response) => {
-            // Response is already printed in the function
+        Ok(response_text) => {
+            // Parse and print JSON response
+            match serde_json::from_str::<serde_json::Value>(&response_text) {
+                Ok(data) => match serde_json::to_string(&data) {
+                    Ok(valid_json) => {
+                        println!("{valid_json}");
+                    }
+                    Err(e) => {
+                        eprintln!("❌ Failed to serialize response to JSON: {}", e);
+                        std::process::exit(1);
+                    }
+                },
+                Err(e) => {
+                    eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
         Err(e) => {
             eprintln!("❌ Error dispatching command: {}", e);

@@ -13,7 +13,17 @@ Launching the application is as simple as passing the token:
 $ cargo run eyJ...lA
 ```
 
-Where "eyJ...lA" is the API bearer token
+Where "eyJ...lA" is the API bearer token. If you're using a compiled version, use ``fsqlctl`` instead:
+
+```shell
+$ fsqlctl eyJ...lA
+```
+
+You can also pipe queries to the command and then to another process such as ``jq``. For example:
+
+```shell
+echo "EXPLAIN QUERY module_activity.** WITH module_activity.activity_id = LOAD AND module_activity.actor.process.file.name = 'regsvr32.exe' AFTER 1h" | fsqlctl eyJ...lA -i | jq
+```
 
 ## Release Builds
 

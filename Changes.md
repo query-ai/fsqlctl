@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7] (2024-11-06)
+
+- Added new cli option ``-i`` / ``--stdin`` to read commands from a pipe
+- When in piping mode, output is not pretty printed (pipe to ``jq`` for more fun)
+- Split main.rs up since it was getting kinda big
+- Messages from the api.rs module use the eprintln! macro so that piping output doesn't get muddled
+
+
 ## [0.6] (2024-10-30)
 
 - Added command history support via readline

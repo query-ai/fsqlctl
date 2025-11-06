@@ -86,7 +86,7 @@ pub fn dispatch_query(
         let pretty_payload = serde_json::to_string_pretty(&data)
             .unwrap_or_else(|_| "Failed to serialize".to_string());
         eprintln!("Payload: ");
-        println!("{pretty_payload}");
+        eprintln!("{pretty_payload}");
     }
 
     let client = Client::new();
@@ -173,7 +173,7 @@ pub fn dispatch_query(
             Ok(error_body) => {
                 if verbose {
                     eprintln!("📄 Error response body:");
-                    println!("{}", error_body);
+                    eprintln!("{}", error_body);
 
                     // Look for common auth error patterns
                     if error_body.to_lowercase().contains("unauthorized") {
@@ -205,18 +205,5 @@ pub fn dispatch_query(
     }
 
     let response_text = response.text().unwrap();
-
-    let _data = match serde_json::from_str::<serde_json::Value>(&response_text) {
-        Ok(_data) => {
-            println!("{}", serde_json::to_string_pretty(&_data).unwrap());
-            _data
-        }
-        Err(e) => {
-            if verbose {
-                eprintln!("❌ Failed to read response body: {}", e);
-            }
-            return Err(Box::new(e));
-        }
-    };
     Ok(response_text)
 }

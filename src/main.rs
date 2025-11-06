@@ -2,7 +2,7 @@ use clap::Parser;
 
 mod api;
 mod repl;
-mod stdin;
+mod stdio;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -38,7 +38,7 @@ fn main() {
     let args = Args::parse();
 
     if args.stdin {
-        stdin::handle_stdin(args);
+        stdio::handle_stdin(args);
     } else {
         repl::handle_repl(args);
     }

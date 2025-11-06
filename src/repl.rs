@@ -4,6 +4,7 @@ use rand::prelude::IndexedRandom;
 use rand::rng;
 use rustyline::DefaultEditor;
 use rustyline::error::ReadlineError;
+use serde_json;
 use std::path::PathBuf;
 
 pub fn handle_repl(args: Args) {
@@ -128,8 +129,22 @@ pub fn handle_repl(args: Args) {
         if lower_input.starts_with("explain ") || lower_input.starts_with("query ") {
             let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
-                Ok(_response) => {
-                    // Response is already printed in the function
+                Ok(response_text) => {
+                    // Parse and pretty print JSON response
+                    match serde_json::from_str::<serde_json::Value>(&response_text) {
+                        Ok(data) => {
+                            match serde_json::to_string_pretty(&data) {
+                                Ok(pretty_json) => println!("{}", pretty_json),
+                                Err(_) => println!("{}", response_text), // Fallback to raw text
+                            }
+                        }
+                        Err(e) => {
+                            if args.verbose {
+                                eprintln!("❌ Failed to parse response as JSON: {}", e);
+                            }
+                            println!("{}", response_text); // Output raw response if not valid JSON
+                        }
+                    }
                 }
                 Err(e) => {
                     eprintln!("❌ Error dispatching command: {e}");
