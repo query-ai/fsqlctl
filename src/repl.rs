@@ -25,11 +25,8 @@ pub fn handle_repl(args: Args) {
     // Set up history file path
     let history_path = get_history_path();
 
-    // Load existing history
-    if let Err(_) = rl_editor.load_history(&history_path) {
-        // History file doesn't exist yet, which is fine for first run; it
-        // will be created automagically
-    }
+    // Load existing history if the file exists
+    let _ = rl_editor.load_history(&history_path);
 
     loop {
         // Read multiline input
@@ -119,10 +116,8 @@ pub fn handle_repl(args: Args) {
             continue;
         }
 
-        // Add non-empty commands to history
-        if let Err(_) = rl_editor.add_history_entry(trimmed_input) {
-            // History add failed, but we continue
-        }
+        // Add non-empty commands to history (ignore error if add fails)
+        let _ = rl_editor.add_history_entry(trimmed_input);
 
         let lower_input = trimmed_input.to_lowercase();
 
