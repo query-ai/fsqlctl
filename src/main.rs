@@ -1,3 +1,69 @@
+//! # fsqlctl
+//!
+//! `fsqlctl` is a command line utility used to interact with the FSQL API.
+//!
+//! This utility can dispatch several types of commands in FSQL format. These
+//! are:
+//!
+//! - `EXPLAIN` - get a fully expanded version of the query
+//! - `VALIDATE` - determine if a query has valid syntax
+//! - `QUERY` - execute a query and get the results
+//!
+//! ## REPL
+//!
+//! The easiest way to interact with `fsqlctl` is to run simply run it. It takes a
+//! single positional argument which can be either a JWT token or an API key. Running
+//! without other arguments will drop you into an interactive shell which you can
+//! use to dispatch commands to the FSQL API.
+//!
+//! ```shell
+//! cargo run <SEKRET-HERE>
+//!    Compiling fsqlctl v0.12.0 (/home/brant/projects/qai/fsqlctl)
+//!     Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.75s
+//!      Running `target/debug/fsqlctl foobar`
+//! ================================================================================
+//! Federated Search Query Language (FSQL) Interpreter
+//! 🔗 API: https://api.dev.query.ai/search/translation/fsql
+//! ================================================================================
+//! 📚 FSQL REPL Help:
+//!    EXPLAIN <fsql>   - Get query execution details
+//!    help, h          - Show this help message
+//!    clear            - Clear the screen
+//!    exit             - Exit the REPL
+//! fsql>
+//! ```
+//!
+//! ## Pipes
+//!
+//! When passed information via stdin, fsqlctl will work as a stage in a pipe. It
+//! will write the results of the command to stdout. For EXPLAIN and VALIDATE
+//! commands it prints textual output. When piped a QUERY command it will write
+//! the output as a json array. This opens up the ability to use it with tools
+//! such as `jq`.
+//!
+//! Example:
+//!
+//! ```shell
+//! echo "QUERY module_activity.** WITH module_activity.activity_id = LOAD AND module_activity.actor.process.file.name = 'regsvr32.exe' AFTER 1h" | fsqlctl eyJ...lA | jq
+//! ```
+//!
+//! ## File & Command Switch
+//!
+//! You may also route a command to `fsqlctl` by loading it from a file (``-f``) or
+//! placing it directly as a command line argument (``-c``). In this mode it will
+//! output in the same way as it would if it were piped a command.
+//!
+//! File:
+//! ```shell
+//! fsqlctl eyJ...lA -f query.txt
+//! ```
+//!
+//! Switch:
+//! ```shell
+//! fsqlctl eyJ...lA -c "QUERY module_activity.** WITH module_activity.activity_id = LOAD"
+//! ```
+
+////////////////////////////////////////////////////////////////////////////////
 use clap::Parser;
 use colored::Colorize;
 use std::io::IsTerminal;
