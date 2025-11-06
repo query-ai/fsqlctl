@@ -2,7 +2,7 @@
 
 This project provies a command line tool for working with the FSQL API.
 
-[Documentation](https://query-ai.github.io/fsqlctl/)
+[Documentation](https://query-ai.github.io/fsqlctl/fsqlctl/index.html)
 
 
 ## Prerequisites
