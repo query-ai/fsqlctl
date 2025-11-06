@@ -62,6 +62,7 @@ pub fn handle_stdin(args: Args) {
             }
             Err(e) => {
                 eprintln!("❌ Error dispatching command: {e}");
+                std::process::exit(1);
             }
         }
     } else if lower_input.starts_with("validate ") {
@@ -80,9 +81,11 @@ pub fn handle_stdin(args: Args) {
                         // it doesn't actually return is_valid: false - it gives a different error with an
                         // error code. We should probably fix the API.
                         if data.is_valid {
-                            eprintln!("✅ Query is valid")
+                            eprintln!("✅ Query is valid");
+                            std::process::exit(0);
                         } else {
                             eprintln!("❌ Query is invalid");
+                            std::process::exit(1);
                         }
                     }
                     Err(e) => {
@@ -90,11 +93,13 @@ pub fn handle_stdin(args: Args) {
                             eprintln!("❌ Failed to parse response as JSON: {}", e);
                         }
                         eprintln!("{}", response_text); // Output raw response if not valid JSON
+                        std::process::exit(1);
                     }
                 }
             }
             Err(e) => {
                 eprintln!("❌ Error dispatching command: {e}");
+                std::process::exit(1);
             }
         }
     } else if lower_input.starts_with("query ") {
@@ -131,6 +136,7 @@ pub fn handle_stdin(args: Args) {
             }
             Err(e) => {
                 eprintln!("❌ Error dispatching command: {e}");
+                std::process::exit(1);
             }
         }
     } else {
