@@ -2,6 +2,9 @@
 
 This project provies a command line tool for working with the FSQL API.
 
+[Documentation](https://query-ai.github.io/fsqlctl/)
+
+
 ## Prerequisites
 This project requires the rust toolchain, including cargo.
 
