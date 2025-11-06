@@ -132,11 +132,25 @@ pub fn handle_repl(args: Args) {
             match result {
                 Ok(response_text) => {
                     // Parse and pretty print JSON response
-                    match serde_json::from_str::<serde_json::Value>(&response_text) {
+                    match serde_json::from_str::<api::CommandResponse>(&response_text) {
                         Ok(data) => {
-                            match serde_json::to_string_pretty(&data) {
-                                Ok(pretty_json) => println!("{}", pretty_json),
-                                Err(_) => println!("{}", response_text), // Fallback to raw text
+                            if args.verbose {
+                                println!("{}", "Original Input:".cyan());
+                                println!("{}", data.input);
+                                println!();
+                                println!("{}", "Command:".cyan());
+                                println!("{}", data.command);
+                                println!();
+                            }
+                            println!("{}", "Expanded Query:");
+                            // If the parsed value is a string, just print it so that the newline characters are
+                            // honoured. If not, use the pretty printer from serde_json
+                            match &data.expanded_query {
+                                serde_json::Value::String(s) => println!("{}", s),
+                                _ => match serde_json::to_string_pretty(&data.expanded_query) {
+                                    Ok(pretty_json) => println!("{}", pretty_json),
+                                    Err(_) => println!("{}", response_text), // Fallback to raw text
+                                },
                             }
                         }
                         Err(e) => {

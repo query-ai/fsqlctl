@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9] (2024-11-06)
+
+- Pretty print the expanded query in the repl
+- Added a CommandResponse struct for parsing results more concretely
+
 ## [0.8] (2024-11-06)
 
 - Added dependency on ``colored``library

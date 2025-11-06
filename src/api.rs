@@ -8,6 +8,13 @@ struct PostData {
     q: String,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct CommandResponse {
+    pub command: String,
+    pub input: String,
+    pub expanded_query: serde_json::Value,
+}
+
 fn strip_bearer_prefix(token: &str) -> &str {
     if token.starts_with("Bearer ") {
         &token[7..] // Remove "Bearer " (7 characters)
