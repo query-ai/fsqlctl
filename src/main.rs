@@ -30,13 +30,18 @@ pub struct Args {
 
     #[arg(short, long, help = "Enable verbose output for debugging")]
     pub verbose: bool,
+
+    #[arg(short, long, help = "Read commands from a file")]
+    pub file: Option<String>,
 }
 
 fn main() {
     let args = Args::parse();
 
-    // Detect if input is piped in (i.e. isn't a tty)
-    if !atty::is(Stream::Stdin) {
+    // Check for file input first, then piped input, then REPL
+    if let Some(file_path) = args.file.clone() {
+        stdio::handle_file(args, &file_path);
+    } else if !atty::is(Stream::Stdin) {
         stdio::handle_stdin(args);
     } else {
         repl::handle_repl(args);

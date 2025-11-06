@@ -1,10 +1,14 @@
 use crate::{Args, api};
 use colored::Colorize;
 use serde_json;
+use std::fs;
 use std::io::{self, Read};
 
+/// Explain an FSQL query
+///
+/// Prints an expanded version of the query
 fn handle_explain_command(input: &str, api_url: &str, token: &str, verbose: bool) {
-    let result = api::dispatch_query(input, api_url, token, verbose);
+    let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -44,8 +48,11 @@ fn handle_explain_command(input: &str, api_url: &str, token: &str, verbose: bool
     }
 }
 
+/// Validate an FSQL query
+///
+/// Dispatches a validation request to the FSQL API.
 fn handle_validate_command(input: &str, api_url: &str, token: &str, verbose: bool) {
-    let result = api::dispatch_query(input, api_url, token, verbose);
+    let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
             match serde_json::from_str::<api::ValidateResponse>(&response_text) {
@@ -82,8 +89,13 @@ fn handle_validate_command(input: &str, api_url: &str, token: &str, verbose: boo
     }
 }
 
+/// Dispatch an FSQL query
+///
+/// Dispatches a query to the FSQL API. User-facing messages are printed to
+/// stderr and the actual query results are written to stdout so that the
+/// tool will work in a pipeline.
 fn handle_query_command(input: &str, api_url: &str, token: &str, verbose: bool) {
-    let result = api::dispatch_query(input, api_url, token, verbose);
+    let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -121,6 +133,31 @@ fn handle_query_command(input: &str, api_url: &str, token: &str, verbose: bool) 
     }
 }
 
+/// Route a query to the correct handler.
+///
+/// Valid commands begin with QUERY EXPLAIN or VALIDATE. Any other prefix
+/// will result in an error. The prefix is not case sensitive. Leading
+/// whitespace should be trimmed before handing off to this method.
+fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+    if input.is_empty() {
+        eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
+        std::process::exit(1);
+    }
+    let lower_input = input.to_lowercase();
+
+    if lower_input.starts_with("explain ") {
+        handle_explain_command(input, api_url, token, verbose);
+    } else if lower_input.starts_with("validate ") {
+        handle_validate_command(input, api_url, token, verbose);
+    } else if lower_input.starts_with("query ") {
+        handle_query_command(input, api_url, token, verbose);
+    } else {
+        eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
+        std::process::exit(1);
+    }
+}
+
+/// Handle reading an FSQL query piped in on stdin
 pub fn handle_stdin(args: Args) {
     let api_url = format!("https://{}/{}", args.host, args.path);
 
@@ -135,23 +172,22 @@ pub fn handle_stdin(args: Args) {
     }
 
     let input = buffer.trim();
+    process_command(input, &api_url, &args.token, args.verbose);
+}
 
-    // Check if input is empty
-    if input.is_empty() {
-        eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
-        std::process::exit(1);
-    }
+/// Handle loading an FSQL query from a file.
+pub fn handle_file(args: Args, file_path: &str) {
+    let api_url = format!("https://{}/{}", args.host, args.path);
 
-    let lower_input = input.to_lowercase();
+    // Read all from file
+    let buffer = match fs::read_to_string(file_path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading from file '{}': {}", file_path, e);
+            std::process::exit(1);
+        }
+    };
 
-    if lower_input.starts_with("explain ") {
-        handle_explain_command(input, &api_url, &args.token, args.verbose);
-    } else if lower_input.starts_with("validate ") {
-        handle_validate_command(input, &api_url, &args.token, args.verbose);
-    } else if lower_input.starts_with("query ") {
-        handle_query_command(input, &api_url, &args.token, args.verbose);
-    } else {
-        eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
-        std::process::exit(1);
-    }
+    let input = buffer.trim();
+    process_command(input, &api_url, &args.token, args.verbose);
 }

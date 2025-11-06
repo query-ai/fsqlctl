@@ -10,6 +10,7 @@ struct PostData {
     q: String,
 }
 
+/// JSON Response details for the FSQL EXPLAIN command
 #[derive(Serialize, Deserialize)]
 pub struct ExplainResponse {
     pub command: String,
@@ -17,12 +18,14 @@ pub struct ExplainResponse {
     pub expanded_query: serde_json::Value,
 }
 
+/// JSON Response details for the FSQL VALIDATE command
 #[derive(Serialize, Deserialize)]
 pub struct ValidateResponse {
     pub command: String,
     pub is_valid: bool,
 }
 
+/// JSON Response details for the FSQL QUERY command
 #[derive(Serialize, Deserialize)]
 pub struct QueryResponse {
     pub command: String,
@@ -31,6 +34,7 @@ pub struct QueryResponse {
     pub results: Vec<serde_json::Value>,
 }
 
+/// Remove the Bearer prefix (if present) from a given token string
 fn strip_bearer_prefix(token: &str) -> &str {
     if token.starts_with("Bearer ") {
         &token[7..] // Remove "Bearer " (7 characters)
@@ -39,6 +43,7 @@ fn strip_bearer_prefix(token: &str) -> &str {
     }
 }
 
+/// Attempt to whether the given string is a JWT or API token
 fn is_jwt_token(token: &str) -> bool {
     let parts: Vec<&str> = token.split('.').collect();
     if parts.len() != 3 {
@@ -54,6 +59,12 @@ fn is_jwt_token(token: &str) -> bool {
     })
 }
 
+/// Add necessary headers to the request
+///
+/// The FSQL API has some header requirements - it needs to provide the
+/// x-queryai-fuql version, Content-Type headers, and an auth header. We
+/// also set the user-agent string so that we can detect and track which
+/// requests come from this tool
 fn add_headers(
     request_builder: reqwest::blocking::RequestBuilder,
     token: &str,
@@ -62,7 +73,10 @@ fn add_headers(
     let clean_token = strip_bearer_prefix(token);
     let mut request_headers = header::HeaderMap::new();
 
-    request_headers.insert(header::USER_AGENT, header::HeaderValue::from_static("curl"));
+    request_headers.insert(
+        header::USER_AGENT,
+        header::HeaderValue::from_static("fsqlctl"),
+    );
     request_headers.insert(
         header::HeaderName::from_static("x-queryai-fuql"),
         header::HeaderValue::from_static("v2"),
@@ -94,7 +108,8 @@ fn add_headers(
     request_builder.headers(request_headers)
 }
 
-pub fn dispatch_query(
+/// Dispatch an FSQL command and print the response
+pub fn dispatch_command(
     query: &str,
     api: &str,
     token: &str,

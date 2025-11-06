@@ -8,6 +8,7 @@ use rustyline::error::ReadlineError;
 use serde_json;
 use std::path::PathBuf;
 
+/// Launch an iteractive REPL to dispatch FSQL commands
 pub fn handle_repl(args: Args) {
     let api_url = format!("https://{}/{}", args.host, args.path);
     print_welcome(&api_url);
@@ -123,7 +124,7 @@ pub fn handle_repl(args: Args) {
 
         // Process the complete input (use cleaned input for API calls)
         if lower_input.starts_with("validate ") {
-            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
+            let result = api::dispatch_command(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(response_text) => {
                     // Parse and pretty print JSON response
@@ -156,7 +157,7 @@ pub fn handle_repl(args: Args) {
                 }
             }
         } else if lower_input.starts_with("explain ") {
-            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
+            let result = api::dispatch_command(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(response_text) => {
                     // Parse and pretty print JSON response
@@ -194,7 +195,7 @@ pub fn handle_repl(args: Args) {
                 }
             }
         } else if lower_input.starts_with("query ") {
-            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
+            let result = api::dispatch_command(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(response_text) => {
                     // Parse and pretty print JSON response
@@ -252,6 +253,7 @@ pub fn handle_repl(args: Args) {
     }
 }
 
+/// Return the path where the RELP history is stored
 fn get_history_path() -> PathBuf {
     dirs::home_dir()
         .map(|mut path| {
@@ -261,6 +263,7 @@ fn get_history_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from(".fsql_history"))
 }
 
+/// Saves REPL history, prints a goodbye message, and exits
 fn save_history_and_exit(rl_editor: &mut DefaultEditor, history_path: &PathBuf) -> ! {
     // Save history before exit
     if let Err(e) = rl_editor.save_history(history_path) {
@@ -271,6 +274,7 @@ fn save_history_and_exit(rl_editor: &mut DefaultEditor, history_path: &PathBuf) 
     std::process::exit(0);
 }
 
+/// Print the REPL command list
 fn print_help() {
     println!("📚 {}", "FSQL REPL Help:".cyan());
     println!("   EXPLAIN <fsql>   - Get query execution details");
@@ -279,6 +283,7 @@ fn print_help() {
     println!("   exit             - Exit the REPL");
 }
 
+/// Print helpful REPL tips
 fn print_tips() {
     println!("💡 {}", "Tips:".cyan());
     println!("  • Multiline queries can be pasted");
@@ -290,6 +295,7 @@ fn print_tips() {
     println!("  • Use Ctrl+R for reverse history search");
 }
 
+/// Print the welcome text
 fn print_welcome(api_url: &str) {
     let div = "================================================================================"
         .bright_blue();
@@ -304,6 +310,7 @@ fn print_welcome(api_url: &str) {
     println!("{}", div);
 }
 
+/// Select a random goodbye message and print it
 fn print_goodbye() {
     let exit_messages = vec![
         "FUQL off!",
