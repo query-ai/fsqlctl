@@ -14,7 +14,7 @@ pub fn handle_repl(args: Args) {
     println!("API: {api_url}");
 
     // Initialize rustyline editor
-    let mut rl = match DefaultEditor::new() {
+    let mut rl_editor = match DefaultEditor::new() {
         Ok(editor) => editor,
         Err(e) => {
             eprintln!("Failed to initialize readline editor: {}", e);
@@ -26,7 +26,7 @@ pub fn handle_repl(args: Args) {
     let history_path = get_history_path();
 
     // Load existing history
-    if let Err(_) = rl.load_history(&history_path) {
+    if let Err(_) = rl_editor.load_history(&history_path) {
         // History file doesn't exist yet, which is fine for first run
     }
 
@@ -43,7 +43,7 @@ pub fn handle_repl(args: Args) {
                 format!("{:3}> ", line_count + 1)
             };
 
-            match rl.readline(&prompt) {
+            match rl_editor.readline(&prompt) {
                 Ok(line) => {
                     // Check for special commands on any line
                     let trimmed_line = line.trim();
@@ -102,7 +102,7 @@ pub fn handle_repl(args: Args) {
                 Err(ReadlineError::Eof) => {
                     // Handle Ctrl+D - exit the program
                     println!();
-                    save_history_and_exit(&mut rl, &history_path);
+                    save_history_and_exit(&mut rl_editor, &history_path);
                 }
                 Err(err) => {
                     eprintln!("Error reading input: {err}");
@@ -119,7 +119,7 @@ pub fn handle_repl(args: Args) {
         }
 
         // Add non-empty commands to history
-        if let Err(_) = rl.add_history_entry(trimmed_input) {
+        if let Err(_) = rl_editor.add_history_entry(trimmed_input) {
             // History add failed, but we continue
         }
 
@@ -171,7 +171,7 @@ pub fn handle_repl(args: Args) {
             println!("API: {}", api_url);
         } else if lower_input == "exit" {
             println!();
-            save_history_and_exit(&mut rl, &history_path);
+            save_history_and_exit(&mut rl_editor, &history_path);
         } else {
             println!("(╯°□°)╯︵ ┻━┻ Invalid Command");
             println!("💡 Type 'help' for available commands");
@@ -188,9 +188,9 @@ fn get_history_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from(".fsql_history"))
 }
 
-fn save_history_and_exit(rl: &mut DefaultEditor, history_path: &PathBuf) -> ! {
+fn save_history_and_exit(rl_editor: &mut DefaultEditor, history_path: &PathBuf) -> ! {
     // Save history before exit
-    if let Err(e) = rl.save_history(history_path) {
+    if let Err(e) = rl_editor.save_history(history_path) {
         eprintln!("Warning: Failed to save history: {}", e);
     }
 
