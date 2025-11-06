@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11] (2024-12-19)
+
+- Removed `--stdin` / `-i` CLI flag (now we autodetect)
+- Refactored stdin handling function that got too big and beefy
+
 ## [0.10] (2024-11-06)
 
 - Several fixes to command output

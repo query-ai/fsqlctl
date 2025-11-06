@@ -19,10 +19,10 @@ Where "eyJ...lA" is the API bearer token. If you're using a compiled version, us
 $ fsqlctl eyJ...lA
 ```
 
-You can also pipe queries to the command and then to another process such as ``jq``. For example:
+You can also pipe queries to the command and then to another process such as ``jq``. The tool automatically detects piped input, so no special flags are needed:
 
 ```shell
-echo "QUERY module_activity.** WITH module_activity.activity_id = LOAD AND module_activity.actor.process.file.name = 'regsvr32.exe' AFTER 1h" | fsqlctl eyJ...lA -i | jq
+echo "QUERY module_activity.** WITH module_activity.activity_id = LOAD AND module_activity.actor.process.file.name = 'regsvr32.exe' AFTER 1h" | fsqlctl eyJ...lA | jq
 ```
 
 ## Release Builds

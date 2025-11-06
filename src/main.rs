@@ -1,3 +1,4 @@
+use atty::Stream;
 use clap::Parser;
 
 mod api;
@@ -29,15 +30,13 @@ pub struct Args {
 
     #[arg(short, long, help = "Enable verbose output for debugging")]
     pub verbose: bool,
-
-    #[arg(short = 'i', long = "stdin", help = "Accept input from stdin")]
-    pub stdin: bool,
 }
 
 fn main() {
     let args = Args::parse();
 
-    if args.stdin {
+    // Detect if input is piped in (i.e. isn't a tty)
+    if !atty::is(Stream::Stdin) {
         stdio::handle_stdin(args);
     } else {
         repl::handle_repl(args);
