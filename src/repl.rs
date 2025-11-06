@@ -106,7 +106,7 @@ pub fn handle_repl(args: Args) {
                     save_history_and_exit(&mut rl_editor, &history_path);
                 }
                 Err(err) => {
-                    eprintln!("Error reading input: {err}");
+                    eprintln!("{} {}", "Error reading input:".yellow(), err);
                     continue;
                 }
             }
@@ -127,12 +127,45 @@ pub fn handle_repl(args: Args) {
         let lower_input = trimmed_input.to_lowercase();
 
         // Process the complete input (use cleaned input for API calls)
-        if lower_input.starts_with("explain ") || lower_input.starts_with("query ") {
+        if lower_input.starts_with("validate ") {
             let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
             match result {
                 Ok(response_text) => {
                     // Parse and pretty print JSON response
-                    match serde_json::from_str::<api::CommandResponse>(&response_text) {
+                    match serde_json::from_str::<api::ValidateResponse>(&response_text) {
+                        Ok(data) => {
+                            if args.verbose {
+                                println!("{}", "Command:".cyan());
+                                println!("{}", data.command);
+                                println!();
+                            }
+                            // The invalid query part probably will never display given the current API because
+                            // it doesn't actually return is_valid: false - it gives a different error with an
+                            // error code. We should probably fix the API.
+                            if data.is_valid {
+                                println!("✅ Query is valid")
+                            } else {
+                                eprintln!("❌ Query is invalid");
+                            }
+                        }
+                        Err(e) => {
+                            if args.verbose {
+                                eprintln!("❌ Failed to parse response as JSON: {}", e);
+                            }
+                            println!("{}", response_text); // Output raw response if not valid JSON
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("❌ Error dispatching command: {e}");
+                }
+            }
+        } else if lower_input.starts_with("explain ") {
+            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
+            match result {
+                Ok(response_text) => {
+                    // Parse and pretty print JSON response
+                    match serde_json::from_str::<api::ExplainResponse>(&response_text) {
                         Ok(data) => {
                             if args.verbose {
                                 println!("{}", "Original Input:".cyan());
@@ -151,6 +184,48 @@ pub fn handle_repl(args: Args) {
                                     Ok(pretty_json) => println!("{}", pretty_json),
                                     Err(_) => println!("{}", response_text), // Fallback to raw text
                                 },
+                            }
+                        }
+                        Err(e) => {
+                            if args.verbose {
+                                eprintln!("❌ Failed to parse response as JSON: {}", e);
+                            }
+                            println!("{}", response_text); // Output raw response if not valid JSON
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("❌ Error dispatching command: {e}");
+                }
+            }
+        } else if lower_input.starts_with("query ") {
+            let result = api::dispatch_query(trimmed_input, &api_url, &args.token, args.verbose);
+            match result {
+                Ok(response_text) => {
+                    // Parse and pretty print JSON response
+                    match serde_json::from_str::<api::QueryResponse>(&response_text) {
+                        Ok(data) => {
+                            if args.verbose {
+                                println!("{}", "Command:".cyan());
+                                println!("{}", data.command);
+                                println!();
+                                println!("{}", "Trace ID:".cyan());
+                                println!("{}", data.trace_id);
+                                println!();
+                            }
+                            println!("{}", "Search ID:".cyan());
+                            println!("{}", data.search_id);
+                            println!();
+                            println!("{}", "Results:");
+                            match serde_json::to_string_pretty(&data.results) {
+                                Ok(pretty_json) => println!("{}", pretty_json),
+                                Err(_) => println!("{}", response_text), // Fallback to raw text
+                            }
+                            let total = data.results.len();
+                            if total == 1 {
+                                println!("{} result found", data.results.len());
+                            } else {
+                                println!("{} results found", data.results.len());
                             }
                         }
                         Err(e) => {

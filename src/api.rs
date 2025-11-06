@@ -1,7 +1,9 @@
-use reqwest::blocking::Client;
+use reqwest::blocking::ClientBuilder;
+// use reqwest::blocking::Client;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PostData {
@@ -9,10 +11,24 @@ struct PostData {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct CommandResponse {
+pub struct ExplainResponse {
     pub command: String,
     pub input: String,
     pub expanded_query: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidateResponse {
+    pub command: String,
+    pub is_valid: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct QueryResponse {
+    pub command: String,
+    pub search_id: String,
+    pub trace_id: String,
+    pub results: Vec<serde_json::Value>,
 }
 
 fn strip_bearer_prefix(token: &str) -> &str {
@@ -96,7 +112,10 @@ pub fn dispatch_query(
         eprintln!("{pretty_payload}");
     }
 
-    let client = Client::new();
+    let client = ClientBuilder::new()
+        .connect_timeout(Duration::from_secs(10)) // Time to establish connection
+        .timeout(Duration::from_secs(650)) // Total request timeout
+        .build()?;
 
     // Build request with appropriate auth header based on token type
     let request = add_headers(client.post(api), token, verbose).json(&data);

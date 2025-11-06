@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10] (2024-11-06)
+
+- Several fixes to command output
+- Proper structs for validate, explain, and query response types
+- Added increased timeouts to the api client for long-running queries
+
 ## [0.9] (2024-11-06)
 
 - Pretty print the expanded query in the repl
