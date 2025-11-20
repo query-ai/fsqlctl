@@ -83,6 +83,38 @@ fn handle_explain_connectors(trimmed_input: &str, api_url: &str, args: &Args) {
     }
 }
 
+/// Handle explain attributes command
+fn handle_explain_attributes(trimmed_input: &str, api_url: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainAttributesResponse>(&response_text) {
+                Ok(data) => {
+                    if args.verbose {
+                        println!("{}", "Command:".cyan());
+                        println!("{}", data.command);
+                        println!();
+                    }
+                    println!("{}", "Attributes:");
+                    for attr in data.attributes.iter() {
+                        println!("{attr}");
+                    }
+                }
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    println!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+        }
+    }
+}
+
 /// Handle explain command
 fn handle_explain(trimmed_input: &str, api_url: &str, args: &Args) {
     let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
@@ -313,6 +345,8 @@ pub fn handle_repl(args: Args) {
             handle_validate(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain connectors") {
             handle_explain_connectors(trimmed_input, &api_url, &args);
+        } else if lower_input.starts_with("explain attributes ") {
+            handle_explain_attributes(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain ") {
             handle_explain(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("query ") {
