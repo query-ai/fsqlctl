@@ -4,6 +4,44 @@ use serde_json;
 use std::fs;
 use std::io::{self, Read};
 
+/// Explain configured connectors
+///
+/// Prints a summary of connectors
+fn handle_explain_connectors_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+    let result = api::dispatch_command(input, api_url, token, verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainConnectorsResponse>(&response_text) {
+                Ok(data) => {
+                    if verbose {
+                        eprintln!("{}", "Command:".cyan());
+                        eprintln!("{}", data.command);
+                        eprintln!();
+                    }
+                    eprintln!("{}", "Connectors:");
+                    // If the parsed value is a string, just print it so that the newline characters are
+                    // honoured. If not, use the pretty printer from serde_json
+                    match serde_json::to_string_pretty(&data.connectors) {
+                        Ok(pretty_json) => println!("{}", pretty_json),
+                        Err(_) => println!("{}", response_text), // Fallback to raw text
+                    }
+                }
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    eprintln!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
 /// Explain an FSQL query
 ///
 /// Prints an expanded version of the query
@@ -140,7 +178,9 @@ pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
     }
     let lower_input = input.to_lowercase();
 
-    if lower_input.starts_with("explain ") {
+    if lower_input.starts_with("explain connectors") {
+        handle_explain_connectors_command(input, api_url, token, verbose);
+    } else if lower_input.starts_with("explain ") {
         handle_explain_command(input, api_url, token, verbose);
     } else if lower_input.starts_with("validate ") {
         handle_validate_command(input, api_url, token, verbose);

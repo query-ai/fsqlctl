@@ -10,6 +10,13 @@ struct PostData {
     q: String,
 }
 
+/// JSON Response details for the FSQL EXPLAIN CONNECTORS;
+#[derive(Serialize, Deserialize)]
+pub struct ExplainConnectorsResponse {
+    pub command: String,
+    pub connectors: Vec<serde_json::Value>,
+}
+
 /// JSON Response details for the FSQL EXPLAIN command
 #[derive(Serialize, Deserialize)]
 pub struct ExplainResponse {
