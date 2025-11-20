@@ -75,7 +75,10 @@ mod stdio;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    #[arg(help = "Bearer token or API key for authentication")]
+    #[arg(
+        help = "Bearer token or API key for authentication",
+        env = "FSQL_TOKEN"
+    )]
     pub token: String,
 
     #[arg(
