@@ -44,6 +44,36 @@ fn handle_validate(trimmed_input: &str, api_url: &str, args: &Args) {
     }
 }
 
+/// Handle explain version command
+fn handle_explain_version(trimmed_input: &str, api_url: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainVersionResponse>(&response_text) {
+                Ok(data) => {
+                    if args.verbose {
+                        println!("{}", "Command:".cyan());
+                        println!("{}", data.command);
+                        println!();
+                    }
+                    println!("fsql: {}", data.fsql);
+                    println!(" qdm: {}", data.qdm);
+                }
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    println!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+        }
+    }
+}
+
 /// Handle explain connectors command
 fn handle_explain_connectors(trimmed_input: &str, api_url: &str, args: &Args) {
     let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
@@ -343,6 +373,8 @@ pub fn handle_repl(args: Args) {
         // Process the complete input (use cleaned input for API calls)
         if lower_input.starts_with("validate ") {
             handle_validate(trimmed_input, &api_url, &args);
+        } else if lower_input.starts_with("explain version") {
+            handle_explain_version(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain connectors") {
             handle_explain_connectors(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain attributes ") {
@@ -387,10 +419,13 @@ fn save_history_and_exit(rl_editor: &mut DefaultEditor, history_path: &PathBuf) 
 /// Print the REPL command list
 fn print_help() {
     println!("📚 {}", "FSQL REPL Help:".cyan());
-    println!("   EXPLAIN <fsql>   - Get query execution details");
-    println!("   help, h          - Show this help message");
-    println!("   clear            - Clear the screen");
-    println!("   exit             - Exit the REPL");
+    println!("   EXPLAIN CONNECTORS          - Get details about all configured connectors");
+    println!("   EXPLAIN VERSION             - List FSQL and QDM versions");
+    println!("   EXPLAIN ATTRIBUTES <fsql>   - Get a list of explanded attributes");
+    println!("   EXPLAIN <fsql>              - Get query execution details");
+    println!("   help, h                     - Show this help message");
+    println!("   clear                       - Clear the screen");
+    println!("   exit                        - Exit the REPL");
 }
 
 /// Print helpful REPL tips

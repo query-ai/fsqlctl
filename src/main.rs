@@ -26,10 +26,13 @@
 //! 🔗 API: https://api.dev.query.ai/search/translation/fsql
 //! ================================================================================
 //! 📚 FSQL REPL Help:
-//!    EXPLAIN <fsql>   - Get query execution details
-//!    help, h          - Show this help message
-//!    clear            - Clear the screen
-//!    exit             - Exit the REPL
+//!    EXPLAIN CONNECTORS         - Get details about all configured connectors
+//!    EXPLAIN VERSION            - List FSQL and QDM versions
+//!    EXPLAIN ATTRIBUTES <fsql>  - Get a list of explanded attributes
+//!    EXPLAIN <fsql>             - Get query execution details
+//!    help, h                    - Show this help message
+//!    clear                      - Clear the screen
+//!    exit                       - Exit the REPL
 //! fsql>
 //! ```
 //!

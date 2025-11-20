@@ -17,6 +17,14 @@ pub struct ExplainConnectorsResponse {
     pub connectors: Vec<serde_json::Value>,
 }
 
+/// JSON Response details for the FSQL EXPLAIN CONNECTORS;
+#[derive(Serialize, Deserialize)]
+pub struct ExplainVersionResponse {
+    pub command: String,
+    pub fsql: String,
+    pub qdm: String,
+}
+
 /// JSON Response details for the FSQL EXPLAIN ATTRIBUTES;
 #[derive(Serialize, Deserialize)]
 pub struct ExplainAttributesResponse {
