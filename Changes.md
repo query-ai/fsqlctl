@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.14] (2024-11-20)
+- API token can be passed via environment variable ``FSQL_TOKEN``
+- QAI-3663 - Added improved support for ``EXPLAIN CONNECTORS;``
+- QAI-3662 - Added improved support for ``EXPLAIN ATTRIBUTES ...``
+
 ## [0.13] (2024-11-06)
 - Replaced `atty` dependency with `std::io::IsTerminal`
 - Setup documentation page
