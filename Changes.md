@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.15] (2025-11-20)
+- QAI-3662 - Added improved support for ``EXPLAIN SCHEMA ...``
 
 ## [0.14] (2025-11-20)
 - API token can be passed via environment variable ``FSQL_TOKEN``

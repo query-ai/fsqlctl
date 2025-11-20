@@ -113,6 +113,39 @@ fn handle_explain_connectors(trimmed_input: &str, api_url: &str, args: &Args) {
     }
 }
 
+/// Handle explain schema command
+fn handle_explain_schema(trimmed_input: &str, api_url: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainSchemaResponse>(&response_text) {
+                Ok(data) => {
+                    if args.verbose {
+                        println!("{}", "Command:".cyan());
+                        println!("{}", data.command);
+                        println!();
+                    }
+                    println!("{}", "Schema:");
+                    match serde_json::to_string_pretty(&data.schema) {
+                        Ok(pretty_json) => println!("{}", pretty_json),
+                        Err(_) => println!("{}", response_text), // Fallback to raw text
+                    }
+                }
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    println!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+        }
+    }
+}
+
 /// Handle explain attributes command
 fn handle_explain_attributes(trimmed_input: &str, api_url: &str, args: &Args) {
     let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
@@ -373,6 +406,8 @@ pub fn handle_repl(args: Args) {
         // Process the complete input (use cleaned input for API calls)
         if lower_input.starts_with("validate ") {
             handle_validate(trimmed_input, &api_url, &args);
+        } else if lower_input.starts_with("explain schema ") {
+            handle_explain_schema(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain version") {
             handle_explain_version(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain connectors") {

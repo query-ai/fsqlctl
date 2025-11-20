@@ -3,6 +3,7 @@ use reqwest::blocking::ClientBuilder;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -30,6 +31,13 @@ pub struct ExplainVersionResponse {
 pub struct ExplainAttributesResponse {
     pub command: String,
     pub attributes: Vec<String>,
+}
+
+/// JSON Response details for the FSQL EXPLAIN SCHEMA command
+#[derive(Serialize, Deserialize)]
+pub struct ExplainSchemaResponse {
+    pub command: String,
+    pub schema: HashMap<String, HashMap<String, serde_json::Value>>,
 }
 
 /// JSON Response details for the FSQL EXPLAIN command

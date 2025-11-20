@@ -7,7 +7,7 @@ use std::io::{self, Read};
 /// Explain configured connectors
 ///
 /// Prints a summary of connectors
-fn handle_explain_connectors_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_explain_connectors(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -40,10 +40,46 @@ fn handle_explain_connectors_command(input: &str, api_url: &str, token: &str, ve
     }
 }
 
+/// Explain schema
+///
+/// Prints a description of the graphql schema for a given path
+fn handle_explain_schema(input: &str, api_url: &str, token: &str, verbose: bool) {
+    let result = api::dispatch_command(input, api_url, token, verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainSchemaResponse>(&response_text) {
+                Ok(data) => {
+                    if verbose {
+                        eprintln!("{}", "Command:".cyan());
+                        eprintln!("{}", data.command);
+                        eprintln!();
+                    }
+                    eprintln!("{}", "Schema:");
+                    match serde_json::to_string_pretty(&data.schema) {
+                        Ok(pretty_json) => println!("{}", pretty_json),
+                        Err(_) => println!("{}", response_text), // Fallback to raw text
+                    }
+                }
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    eprintln!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
 /// Explain attributes
 ///
 /// Prints an expansion of the given attributes
-fn handle_explain_attributes_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_explain_attributes(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -76,10 +112,10 @@ fn handle_explain_attributes_command(input: &str, api_url: &str, token: &str, ve
     }
 }
 
-/// Explain versin
+/// Explain version
 ///
 /// Prints version info from the API
-fn handle_explain_version_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_explain_version(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -110,7 +146,7 @@ fn handle_explain_version_command(input: &str, api_url: &str, token: &str, verbo
 /// Explain an FSQL query
 ///
 /// Prints an expanded version of the query
-fn handle_explain_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_explain(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -154,7 +190,7 @@ fn handle_explain_command(input: &str, api_url: &str, token: &str, verbose: bool
 /// Validate an FSQL query
 ///
 /// Dispatches a validation request to the FSQL API.
-fn handle_validate_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_validate(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -197,7 +233,7 @@ fn handle_validate_command(input: &str, api_url: &str, token: &str, verbose: boo
 /// Dispatches a query to the FSQL API. User-facing messages are printed to
 /// stderr and the actual query results are written to stdout so that the
 /// tool will work in a pipeline.
-fn handle_query_command(input: &str, api_url: &str, token: &str, verbose: bool) {
+fn handle_query(input: &str, api_url: &str, token: &str, verbose: bool) {
     let result = api::dispatch_command(input, api_url, token, verbose);
     match result {
         Ok(response_text) => {
@@ -244,17 +280,19 @@ pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
     let lower_input = input.to_lowercase();
 
     if lower_input.starts_with("explain connectors") {
-        handle_explain_connectors_command(input, api_url, token, verbose);
+        handle_explain_connectors(input, api_url, token, verbose);
+    } else if lower_input.starts_with("explain schema ") {
+        handle_explain_schema(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain version") {
-        handle_explain_version_command(input, api_url, token, verbose);
+        handle_explain_version(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain attributes ") {
-        handle_explain_attributes_command(input, api_url, token, verbose);
+        handle_explain_attributes(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain ") {
-        handle_explain_command(input, api_url, token, verbose);
+        handle_explain(input, api_url, token, verbose);
     } else if lower_input.starts_with("validate ") {
-        handle_validate_command(input, api_url, token, verbose);
+        handle_validate(input, api_url, token, verbose);
     } else if lower_input.starts_with("query ") {
-        handle_query_command(input, api_url, token, verbose);
+        handle_query(input, api_url, token, verbose);
     } else {
         eprintln!("(╯°□°)╯︵ ┻━┻ Invalid Command");
         std::process::exit(1);
