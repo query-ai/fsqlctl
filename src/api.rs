@@ -48,6 +48,13 @@ pub struct ExplainResponse {
     pub expanded_query: serde_json::Value,
 }
 
+/// JSON Response details for the FSQL EXPLAIN GRAPHQL command
+#[derive(Serialize, Deserialize)]
+pub struct ExplainGraphqlResponse {
+    pub command: String,
+    pub query: String,
+}
+
 /// JSON Response details for the FSQL VALIDATE command
 #[derive(Serialize, Deserialize)]
 pub struct ValidateResponse {

@@ -143,6 +143,34 @@ fn handle_explain_version(input: &str, api_url: &str, token: &str, verbose: bool
     }
 }
 
+/// Explain graphql
+///
+/// Prints the graphql version of a given FSQL query
+fn handle_explain_graphql(input: &str, api_url: &str, token: &str, verbose: bool) {
+    let result = api::dispatch_command(input, api_url, token, verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainGraphqlResponse>(&response_text) {
+                Ok(data) => {
+                    eprintln!("{}", "Graphql Query:");
+                    println!("{}", data.query);
+                }
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    eprintln!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
 /// Explain an FSQL query
 ///
 /// Prints an expanded version of the query
@@ -283,6 +311,8 @@ pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
         handle_explain_connectors(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain schema ") {
         handle_explain_schema(input, api_url, token, verbose);
+    } else if lower_input.starts_with("explain graphql ") {
+        handle_explain_graphql(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain version") {
         handle_explain_version(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain attributes ") {

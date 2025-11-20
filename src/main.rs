@@ -30,6 +30,7 @@
 //!    EXPLAIN VERSION            - List FSQL and QDM versions
 //!    EXPLAIN ATTRIBUTES <fsql>  - Get a list of explanded attributes
 //!    EXPLAIN <fsql>             - Get query execution details
+//!    EXPLAIN GRAPHQL <fsql>      - Show the graphql translation of the given FSQL
 //!    help, h                    - Show this help message
 //!    clear                      - Clear the screen
 //!    exit                       - Exit the REPL

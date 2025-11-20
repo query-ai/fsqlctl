@@ -44,6 +44,35 @@ fn handle_validate(trimmed_input: &str, api_url: &str, args: &Args) {
     }
 }
 
+/// Handle explain graphql command
+fn handle_explain_graphql(trimmed_input: &str, api_url: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::ExplainGraphqlResponse>(&response_text) {
+                Ok(data) => {
+                    if args.verbose {
+                        println!("{}", "Command:".cyan());
+                        println!("{}", data.command);
+                        println!();
+                    }
+                    println!("{}", data.query);
+                }
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    println!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+        }
+    }
+}
+
 /// Handle explain version command
 fn handle_explain_version(trimmed_input: &str, api_url: &str, args: &Args) {
     let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
@@ -408,6 +437,8 @@ pub fn handle_repl(args: Args) {
             handle_validate(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain schema ") {
             handle_explain_schema(trimmed_input, &api_url, &args);
+        } else if lower_input.starts_with("explain graphql ") {
+            handle_explain_graphql(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain version") {
             handle_explain_version(trimmed_input, &api_url, &args);
         } else if lower_input.starts_with("explain connectors") {
@@ -458,6 +489,7 @@ fn print_help() {
     println!("   EXPLAIN VERSION             - List FSQL and QDM versions");
     println!("   EXPLAIN ATTRIBUTES <fsql>   - Get a list of explanded attributes");
     println!("   EXPLAIN <fsql>              - Get query execution details");
+    println!("   EXPLAIN GRAPHQL <fsql>      - Show the graphql translation of the given FSQL");
     println!("   help, h                     - Show this help message");
     println!("   clear                       - Clear the screen");
     println!("   exit                        - Exit the REPL");

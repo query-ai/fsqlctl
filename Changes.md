@@ -2,6 +2,8 @@
 
 ## [0.15] (2025-11-20)
 - QAI-3662 - Added improved support for ``EXPLAIN SCHEMA ...``
+- QAI-3664 - Added improved support for ``EXPLAIN GRAPHQL <fsql>``
+- Refactor repl output to use separate functions for each handler
 
 ## [0.14] (2025-11-20)
 - API token can be passed via environment variable ``FSQL_TOKEN``
