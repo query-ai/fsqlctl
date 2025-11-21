@@ -525,20 +525,16 @@ fn print_welcome(api_url: &str) {
 /// Select a random goodbye message and print it
 fn print_goodbye() {
     let exit_messages = vec![
-        "FUQL off!",
-        "I was just FUQLing with you...",
-        "Get the FUQL out of here!",
-        "Take your stupid FUQLing rope!",
-        "Where the FUQL do you think you're going?",
-        "What the FUQL?!?",
-        "Well FUQL you, too!",
-        "Well aren't you FUQLing special?",
-        "What did you do?! FUQLin'... what the FUQLin' FUQL! Who the FUQL, FUQLed this FUQLin'? FUQL. How did you two FUQLin', FUQLs?......... FUQL!!!",
+        "Query ya later!",
+        "Ya'll query again now, ya hear?",
+        "Until our paths join again",
+        "Catch you on the Query side!",
+        "The FSQL was strong with this session.",
     ];
     let mut rand_gen = rng();
     if let Some(goodbye_msg) = exit_messages.choose(&mut rand_gen) {
-        println!("{}", goodbye_msg.yellow());
+        println!("❤ {}", goodbye_msg.yellow());
     } else {
-        println!("Exiting REPL.");
+        println!("🙁 Exiting REPL.");
     }
 }
