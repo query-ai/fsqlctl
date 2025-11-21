@@ -85,11 +85,7 @@ pub struct Args {
     )]
     pub token: String,
 
-    #[arg(
-        long,
-        default_value = "api.dev.query.ai",
-        help = "Hostname for FSQL API"
-    )]
+    #[arg(long, default_value = "api.query.ai", help = "Hostname for FSQL API")]
     pub host: String,
 
     #[arg(

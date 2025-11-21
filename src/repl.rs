@@ -257,15 +257,12 @@ fn handle_query(trimmed_input: &str, api_url: &str, args: &Args) {
             match serde_json::from_str::<api::QueryResponse>(&response_text) {
                 Ok(data) => {
                     if args.verbose {
-                        println!("{}", "Command:".cyan());
-                        println!("{}", data.command);
+                        println!("{} {}", "Command:".cyan(), data.command);
                         println!();
-                        println!("{}", "Trace ID:".cyan());
-                        println!("{}", data.trace_id);
+                        println!("{} {}", "Trace ID:".cyan(), data.trace_id);
                         println!();
                     }
-                    println!("{}", "Search ID:".cyan());
-                    println!("{}", data.search_id);
+                    println!("{} {}", "Search ID:".cyan(), data.search_id);
                     println!();
                     println!("{}", "Results:");
                     match serde_json::to_string_pretty(&data.results) {
@@ -320,7 +317,7 @@ fn handle_invalid_command() {
 
 /// Launch an iteractive REPL to dispatch FSQL commands
 pub fn handle_repl(args: Args) {
-    let api_url = format!("https://{}/{}", args.host, args.path);
+    let api_url = format!("https://{}:{}/{}", args.host, args.port, args.path);
     print_welcome(&api_url);
     print_help();
 

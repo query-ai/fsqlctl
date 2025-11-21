@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.16] (2025-11-21)
+- Switch exit messages to be a bit less... interesting
+- Updated the default host to ``api.query.ai``
+
 ## [0.15] (2025-11-20)
 - QAI-3662 - Added improved support for ``EXPLAIN SCHEMA ...``
 - QAI-3664 - Added improved support for ``EXPLAIN GRAPHQL <fsql>``
