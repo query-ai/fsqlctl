@@ -1,8 +1,10 @@
 # Changelog
 
-## [0.16] (2025-11-21)
+## [0.16] (2025-11-24)
 - Switch exit messages to be a bit less... interesting
 - Updated the default host to ``api.query.ai``
+- Added config file handling (only supports keys at the moment)
+- Cache last used key in configuration file
 
 ## [0.15] (2025-11-20)
 - QAI-3662 - Added improved support for ``EXPLAIN SCHEMA ...``
