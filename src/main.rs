@@ -73,6 +73,7 @@ use colored::Colorize;
 use std::io::IsTerminal;
 
 mod api;
+mod config;
 mod repl;
 mod stdio;
 
@@ -83,7 +84,7 @@ pub struct Args {
         help = "Bearer token or API key for authentication",
         env = "FSQL_TOKEN"
     )]
-    pub token: String,
+    pub token: Option<String>,
 
     #[arg(long, default_value = "api.query.ai", help = "Hostname for FSQL API")]
     pub host: String,
@@ -121,6 +122,9 @@ pub struct Args {
 fn main() {
     let args = Args::parse();
 
+    // Resolve token from CLI/env or config file & update args
+    let token = resolve_token(&args);
+
     // Check for explicit input methods, then piped input, then REPL
     if let Some(command) = args.command.clone() {
         if !std::io::stdin().is_terminal() {
@@ -131,7 +135,7 @@ fn main() {
             std::process::exit(1);
         }
         let api_url = format!("https://{}/{}", args.host, args.path);
-        stdio::process_command(&command, &api_url, &args.token, args.verbose);
+        stdio::process_command(&command, &api_url, &token, args.verbose);
     } else if let Some(file_path) = args.file.clone() {
         if !std::io::stdin().is_terminal() {
             eprintln!(
@@ -140,10 +144,63 @@ fn main() {
             );
             std::process::exit(1);
         }
-        stdio::handle_file(args, &file_path);
+        stdio::handle_file(args, &token, &file_path);
     } else if !std::io::stdin().is_terminal() {
-        stdio::handle_stdin(args);
+        stdio::handle_stdin(args, &token);
     } else {
-        repl::handle_repl(args);
+        repl::handle_repl(args, &token);
+    }
+}
+
+/// Resolve the API token from CLI argument, environment variable, or config file
+/// Save the token to config if provided via CLI/env
+fn resolve_token(args: &Args) -> String {
+    // Load existing config
+    let mut config = match config::Config::load() {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("⚠️  Warning: Failed to load config file: {}", e);
+            eprintln!("   Using default configuration");
+            config::Config::default()
+        }
+    };
+
+    // Check if token was provided via CLI or environment
+    if let Some(provided_token) = &args.token {
+        // Token was provided - save it to config for this host
+        config.set_token(&args.host, provided_token);
+
+        // Save updated config
+        if let Err(e) = config.save() {
+            eprintln!("⚠️  Warning: Failed to save token to config: {}", e);
+        } else if args.verbose {
+            eprintln!(
+                "💾 Token saved to config for host '{}' at: {}",
+                args.host,
+                config::Config::get_config_location()
+            );
+        }
+
+        provided_token.clone()
+    } else {
+        // No token provided - try to load from config
+        if let Some(stored_token) = config.get_token(&args.host) {
+            if args.verbose {
+                eprintln!(
+                    "🔑 Using stored token for host '{}' from config file",
+                    args.host
+                );
+            }
+            stored_token.clone()
+        } else {
+            eprintln!("{}",
+                format!(
+                    "❌ No API token found for host '{}'.\n   Provide a token via:\n   • Command line argument: fsqlctl <TOKEN> ...\n   • Environment variable: FSQL_TOKEN=<TOKEN>\n   • Config file at: {}",
+                    args.host,
+                    config::Config::get_config_location()
+                ).red()
+            );
+            std::process::exit(1);
+        }
     }
 }

@@ -330,7 +330,7 @@ pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
 }
 
 /// Handle reading an FSQL query piped in on stdin
-pub fn handle_stdin(args: Args) {
+pub fn handle_stdin(args: Args, token: &str) {
     let api_url = format!("https://{}/{}", args.host, args.path);
 
     // Read all of stdin
@@ -344,11 +344,11 @@ pub fn handle_stdin(args: Args) {
     }
 
     let input = buffer.trim();
-    process_command(input, &api_url, &args.token, args.verbose);
+    process_command(input, &api_url, token, args.verbose);
 }
 
 /// Handle loading an FSQL query from a file.
-pub fn handle_file(args: Args, file_path: &str) {
+pub fn handle_file(args: Args, token: &str, file_path: &str) {
     let api_url = format!("https://{}/{}", args.host, args.path);
 
     // Read all from file
@@ -361,5 +361,5 @@ pub fn handle_file(args: Args, file_path: &str) {
     };
 
     let input = buffer.trim();
-    process_command(input, &api_url, &args.token, args.verbose);
+    process_command(input, &api_url, token, args.verbose);
 }

@@ -9,8 +9,8 @@ use serde_json;
 use std::path::PathBuf;
 
 /// Handle validate command
-fn handle_validate(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_validate(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -45,8 +45,8 @@ fn handle_validate(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain graphql command
-fn handle_explain_graphql(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain_graphql(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -74,8 +74,8 @@ fn handle_explain_graphql(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain version command
-fn handle_explain_version(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain_version(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -104,8 +104,8 @@ fn handle_explain_version(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain connectors command
-fn handle_explain_connectors(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain_connectors(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -143,8 +143,8 @@ fn handle_explain_connectors(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain schema command
-fn handle_explain_schema(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain_schema(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -176,8 +176,8 @@ fn handle_explain_schema(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain attributes command
-fn handle_explain_attributes(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain_attributes(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -208,8 +208,8 @@ fn handle_explain_attributes(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle explain command
-fn handle_explain(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_explain(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -249,8 +249,8 @@ fn handle_explain(trimmed_input: &str, api_url: &str, args: &Args) {
 }
 
 /// Handle query command
-fn handle_query(trimmed_input: &str, api_url: &str, args: &Args) {
-    let result = api::dispatch_command(trimmed_input, api_url, &args.token, args.verbose);
+fn handle_query(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
     match result {
         Ok(response_text) => {
             // Parse and pretty print JSON response
@@ -316,7 +316,7 @@ fn handle_invalid_command() {
 }
 
 /// Launch an iteractive REPL to dispatch FSQL commands
-pub fn handle_repl(args: Args) {
+pub fn handle_repl(args: Args, token: &str) {
     let api_url = format!("https://{}:{}/{}", args.host, args.port, args.path);
     print_welcome(&api_url);
     print_help();
@@ -431,21 +431,21 @@ pub fn handle_repl(args: Args) {
 
         // Process the complete input (use cleaned input for API calls)
         if lower_input.starts_with("validate ") {
-            handle_validate(trimmed_input, &api_url, &args);
+            handle_validate(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain schema ") {
-            handle_explain_schema(trimmed_input, &api_url, &args);
+            handle_explain_schema(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain graphql ") {
-            handle_explain_graphql(trimmed_input, &api_url, &args);
+            handle_explain_graphql(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain version") {
-            handle_explain_version(trimmed_input, &api_url, &args);
+            handle_explain_version(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain connectors") {
-            handle_explain_connectors(trimmed_input, &api_url, &args);
+            handle_explain_connectors(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain attributes ") {
-            handle_explain_attributes(trimmed_input, &api_url, &args);
+            handle_explain_attributes(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain ") {
-            handle_explain(trimmed_input, &api_url, &args);
+            handle_explain(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("query ") {
-            handle_query(trimmed_input, &api_url, &args);
+            handle_query(trimmed_input, &api_url, token, &args);
         } else if lower_input == "help" || lower_input == "h" {
             handle_help();
         } else if lower_input == "clear" {
@@ -524,7 +524,6 @@ fn print_goodbye() {
     let exit_messages = vec![
         "Query ya later!",
         "Ya'll query again now, ya hear?",
-        "Until our paths join again",
         "Catch you on the Query side!",
         "The FSQL was strong with this session.",
     ];
