@@ -143,6 +143,36 @@ fn handle_explain_version(input: &str, api_url: &str, token: &str, verbose: bool
     }
 }
 
+/// Summarize
+///
+/// Prints summary information
+fn handle_summarize(input: &str, api_url: &str, token: &str, verbose: bool) {
+    let result = api::dispatch_command(input, api_url, token, verbose);
+    match result {
+        Ok(response_text) => {
+            match serde_json::from_str::<api::SummarizeResponse>(&response_text) {
+                Ok(data) => {
+                    eprintln!("{}", "Summarize Details:");
+                    match serde_json::to_string_pretty(&data) {
+                        Ok(pretty_json) => println!("{}", pretty_json),
+                        Err(_) => println!("{}", response_text), // Fallback to raw text
+                    }
+                }
+                Err(e) => {
+                    if verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    eprintln!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
 /// Explain graphql
 ///
 /// Prints the graphql version of a given FSQL query
@@ -319,6 +349,8 @@ pub fn process_command(input: &str, api_url: &str, token: &str, verbose: bool) {
         handle_explain_attributes(input, api_url, token, verbose);
     } else if lower_input.starts_with("explain ") {
         handle_explain(input, api_url, token, verbose);
+    } else if lower_input.starts_with("summarize ") {
+        handle_summarize(input, api_url, token, verbose);
     } else if lower_input.starts_with("validate ") {
         handle_validate(input, api_url, token, verbose);
     } else if lower_input.starts_with("query ") {

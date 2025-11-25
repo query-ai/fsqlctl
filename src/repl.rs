@@ -57,6 +57,7 @@ fn handle_explain_graphql(trimmed_input: &str, api_url: &str, token: &str, args:
                         println!("{}", data.command);
                         println!();
                     }
+                    println!("{}", "Graphql:".green());
                     println!("{}", data.query);
                 }
                 Err(e) => {
@@ -103,6 +104,36 @@ fn handle_explain_version(trimmed_input: &str, api_url: &str, token: &str, args:
     }
 }
 
+/// Handle summarize
+fn handle_summarize(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
+    let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
+    match result {
+        Ok(response_text) => {
+            // Parse and pretty print JSON response
+            match serde_json::from_str::<api::SummarizeResponse>(&response_text) {
+                Ok(data) => {
+                    if args.verbose {
+                        println!("{}", "Command:".cyan());
+                        println!("{}", data.command);
+                        println!();
+                    }
+                    println!("Operation: {}", data.operation);
+                    println!("    Value: {}", data.value);
+                }
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("❌ Failed to parse response as JSON: {}", e);
+                    }
+                    println!("{}", response_text); // Output raw response if not valid JSON
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Error dispatching command: {e}");
+        }
+    }
+}
+
 /// Handle explain connectors command
 fn handle_explain_connectors(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
     let result = api::dispatch_command(trimmed_input, api_url, token, args.verbose);
@@ -116,7 +147,7 @@ fn handle_explain_connectors(trimmed_input: &str, api_url: &str, token: &str, ar
                         println!("{}", data.command);
                         println!();
                     }
-                    println!("{}", "Connectors:");
+                    println!("{}", "Connectors:".cyan());
                     match serde_json::to_string_pretty(&data.connectors) {
                         Ok(pretty_json) => println!("{}", pretty_json),
                         Err(_) => println!("{}", response_text), // Fallback to raw text
@@ -155,7 +186,7 @@ fn handle_explain_schema(trimmed_input: &str, api_url: &str, token: &str, args: 
                         println!("{}", data.command);
                         println!();
                     }
-                    println!("{}", "Schema:");
+                    println!("{}", "Schema:".green());
                     match serde_json::to_string_pretty(&data.schema) {
                         Ok(pretty_json) => println!("{}", pretty_json),
                         Err(_) => println!("{}", response_text), // Fallback to raw text
@@ -188,7 +219,7 @@ fn handle_explain_attributes(trimmed_input: &str, api_url: &str, token: &str, ar
                         println!("{}", data.command);
                         println!();
                     }
-                    println!("{}", "Attributes:");
+                    println!("{}", "Attributes:".green());
                     for attr in data.attributes.iter() {
                         println!("{attr}");
                     }
@@ -223,7 +254,7 @@ fn handle_explain(trimmed_input: &str, api_url: &str, token: &str, args: &Args) 
                         println!("{}", data.command);
                         println!();
                     }
-                    println!("{}", "Expanded Query:");
+                    println!("{}", "Expanded Query:".green());
                     // If the parsed value is a string, just print it so that the newline characters are
                     // honoured. If not, use the pretty printer from serde_json
                     match &data.expanded_query {
@@ -264,7 +295,7 @@ fn handle_query(trimmed_input: &str, api_url: &str, token: &str, args: &Args) {
                     }
                     println!("{} {}", "Search ID:".cyan(), data.search_id);
                     println!();
-                    println!("{}", "Results:");
+                    println!("{}", "Results:".green());
                     match serde_json::to_string_pretty(&data.results) {
                         Ok(pretty_json) => println!("{}", pretty_json),
                         Err(_) => println!("{}", response_text), // Fallback to raw text
@@ -432,6 +463,8 @@ pub fn handle_repl(args: Args, token: &str) {
         // Process the complete input (use cleaned input for API calls)
         if lower_input.starts_with("validate ") {
             handle_validate(trimmed_input, &api_url, token, &args);
+        } else if lower_input.starts_with("summarize ") {
+            handle_summarize(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain schema ") {
             handle_explain_schema(trimmed_input, &api_url, token, &args);
         } else if lower_input.starts_with("explain graphql ") {

@@ -11,19 +11,27 @@ struct PostData {
     q: String,
 }
 
-/// JSON Response details for the FSQL EXPLAIN CONNECTORS;
+/// JSON Response details for EXPLAIN CONNECTORS;
 #[derive(Serialize, Deserialize)]
 pub struct ExplainConnectorsResponse {
     pub command: String,
     pub connectors: Vec<serde_json::Value>,
 }
 
-/// JSON Response details for the FSQL EXPLAIN CONNECTORS;
+/// JSON Response details for  EXPLAIN VERSION;
 #[derive(Serialize, Deserialize)]
 pub struct ExplainVersionResponse {
     pub command: String,
     pub fsql: String,
     pub qdm: String,
+}
+
+/// JSON Response details for FSQL SUMMARIZE;
+#[derive(Serialize, Deserialize)]
+pub struct SummarizeResponse {
+    pub command: String,
+    pub operation: String,
+    pub value: serde_json::Value,
 }
 
 /// JSON Response details for the FSQL EXPLAIN ATTRIBUTES;

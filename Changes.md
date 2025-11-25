@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17] (2025-11-25)
+
+- Add support for ``SUMMARIZE`` commands
+- Fixed a few output colors
+- Save API keys for re-use & added config file handling
+- Updated several dependencies
+
 ## [0.16] (2025-11-21)
 - Switch exit messages to be a bit less... interesting
 - Updated the default host to ``api.query.ai``
