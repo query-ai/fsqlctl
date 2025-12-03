@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.18] (2025-11-25)
+
+- Include version number in distributable archive file
+- Added unittests to CI/CD pipeline
+
 ## [0.17] (2025-11-25)
 
 - Add support for ``SUMMARIZE`` commands

@@ -43,8 +43,19 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: "--locked --release"
           strip: true
+
+      - name: Set version output from tag
+        id: set-version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          VERSION="${REF_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Publish artifacts and release
         uses: houseabsolute/actions-rust-release@v0
         with:
           executable-name: fsqlctl
           target: ${{ matrix.platform.target }}
+          archive-name: fsqlctl-${{ matrix.platform.target }}-${{ steps.set-version.outputs.version }}
