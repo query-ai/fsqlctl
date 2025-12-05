@@ -58,4 +58,53 @@ jobs:
         with:
           executable-name: fsqlctl
           target: ${{ matrix.platform.target }}
-          archive-name: fsqlctl-${{ matrix.platform.target }}-${{ steps.set-version.outputs.version }}
+
+      - name: Upload packaged app as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsqlctl-${{ matrix.platform.os-name }}
+          path: target/${{ matrix.platform.target }}/release/fsqlctl
+
+  publish_app_to_s3:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+
+    environment: ${{ github.ref_name }}
+
+    needs: [release]
+
+    steps:
+      - name: Echo variables from environment
+        run: |
+          echo "Running on branch ${{ github.ref_name }}"
+          echo "AWS_ACCOUNT: ${{ vars.AWS_ACCOUNT }}"
+          echo "AWS_REGION: ${{ vars.AWS_REGION }}"
+          echo "DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}"
+          echo "DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::789233699278:role/fsqlctl-downloads-github-actions
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Download all packaged apps from GitHub Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./queryai_app_pkgs
+
+      - name: List downloaded files
+        run: ls -R ./queryai_app_pkgs
+
+      - name: Upload all binaries to S3 by platform
+        run: |
+          for dir in ./queryai_app_pkgs/*; do
+            [ -d "$dir" ] || continue
+            file=$(find "$dir" -type f)
+            platform=$(basename "$dir")
+            aws s3 cp "$file" "s3://${{ vars.DEPLOY_BUCKET }}/downloads/${{ vars.DEPLOY_ENV }}/$platform/"
+          done
