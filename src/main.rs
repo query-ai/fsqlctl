@@ -18,12 +18,12 @@
 //!
 //! ```shell
 //! cargo run <SEKRET-HERE>
-//!    Compiling fsqlctl v0.12.0 (/home/brant/projects/qai/fsqlctl)
+//!    Compiling fsqlctl vn.n.n (/path/to/fsqlctl)
 //!     Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.75s
-//!      Running `target/debug/fsqlctl foobar`
+//!      Running `target/debug/fsqlctl <some token>`
 //! ================================================================================
 //! Federated Search Query Language (FSQL) Interpreter
-//! 🔗 API: https://api.dev.query.ai/search/translation/fsql
+//! 🔗 API: https://api.query.ai/search/translation/fsql
 //! ================================================================================
 //! 📚 FSQL REPL Help:
 //!    EXPLAIN CONNECTORS         - Get details about all configured connectors
@@ -42,7 +42,7 @@
 //! When passed information via stdin, fsqlctl will work as a stage in a pipe. It
 //! will write the results of the command to stdout. For EXPLAIN and VALIDATE
 //! commands it prints textual output. When piped a QUERY command it will write
-//! the output as a json array. This opens up the ability to use it with tools
+//! the output as JSON. This opens up the ability to use it with tools
 //! such as `jq`.
 //!
 //! Example:
